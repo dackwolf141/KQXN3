@@ -7,7 +7,7 @@
     <style>
         /* Thêm kiểu dáng cho bảng */
         table {
-            width: 50%;
+            width: 70%;
             border-collapse: collapse;
             margin: 20px auto;
         }
@@ -29,20 +29,83 @@
 </head>
 <body>
     <b>Hello</b>
-    <table>
-        <tr>
-            <th>Tên xét nghiệm</th>
-            <th>Kết quả</th>
-        </tr>
-        <tr>
-            <td>Glucose</td>
-            <td>5.9</td>
-        </tr>
-        <tr>
-            <td>Cholesterol</td>
-            <td>4.5</td>
-        </tr>
-        <!-- Bạn có thể thêm các dòng dữ liệu khác ở đây -->
+    <table id="resultTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ID Bệnh nhân</th>
+                <th>Tên xét nghiệm</th>
+                <th>Kết quả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dữ liệu sẽ được chèn vào đây từ Firebase -->
+        </tbody>
     </table>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDiMnixrLUHYFTB_ovBgLCsg_dJHJXR10k",
+            authDomain: "send-otp-a1b47.firebaseapp.com",
+            projectId: "send-otp-a1b47",
+            storageBucket: "send-otp-a1b47.firebasestorage.app",
+            messagingSenderId: "458275478793",
+            appId: "1:458275478793:web:37267848e088c4bb6f87d8",
+            measurementId: "G-BZCY87VLGK"
+        };
+
+        // Khởi tạo Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Lấy tham chiếu tới dữ liệu từ Firebase
+        const dataRef = ref(db, 'data2'); // Tham chiếu đến "data" trong Firebase
+
+        // Lắng nghe dữ liệu thay đổi từ Firebase
+        onValue(dataRef, (snapshot) => {
+            const data = snapshot.val();
+            const resultTableBody = document.querySelector('#resultTable tbody');
+            resultTableBody.innerHTML = '';  // Xóa dữ liệu cũ trong bảng
+
+            // Kiểm tra nếu có dữ liệu
+            if (data) {
+                // Duyệt qua các mục dữ liệu và hiển thị vào bảng
+                for (let key in data) {
+                    const item = data[key];
+                    const row = document.createElement('tr');
+
+                    // Tạo các ô trong bảng cho mỗi dữ liệu
+                    const tdID = document.createElement('td');
+                    tdID.textContent = item.id;
+                    const tdIDBN = document.createElement('td');
+                    tdIDBN.textContent = item.id_bn;
+                    const tdTestName = document.createElement('td');
+                    tdTestName.textContent = item.test_name;
+                    const tdResult = document.createElement('td');
+                    tdResult.textContent = item.result;
+
+                    // Thêm các ô vào hàng
+                    row.appendChild(tdID);
+                    row.appendChild(tdIDBN);
+                    row.appendChild(tdTestName);
+                    row.appendChild(tdResult);
+
+                    // Thêm hàng vào bảng
+                    resultTableBody.appendChild(row);
+                }
+            } else {
+                // Nếu không có dữ liệu, hiển thị thông báo
+                const row = document.createElement('tr');
+                const tdNoData = document.createElement('td');
+                tdNoData.setAttribute('colspan', '4');
+                tdNoData.textContent = 'Không có dữ liệu';
+                row.appendChild(tdNoData);
+                resultTableBody.appendChild(row);
+              }
+        });
+    </script>
 </body>
 </html>
