@@ -6,53 +6,159 @@
     <title>Tìm Kiếm Kết Quả</title>
     <style>
         table {
-            width: 100%;
+            width: 80%;
             border-collapse: collapse;
             margin: 20px auto;
         }
+
+        .sticky-table {
+            overflow: auto;
+        }
+
+        .sticky-table thead th, 
+        .sticky-table tbody td {
+            /* Thiết lập chiều rộng mặc định */
+            width: 750px; /* Có thể thay đổi tùy theo bảng của bạn */
+        }
+
+        .sticky-table thead th:first-child,
+        .sticky-table tbody td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: white;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Thêm bóng để phân biệt các cột cố định */
+        }
+
+        .sticky-table thead th:nth-child(2),
+        .sticky-table tbody td:nth-child(2) {
+            position: sticky;
+            left: 70px; /* Điều chỉnh khoảng cách cho cột thứ 2 */
+            background-color: white;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Thêm bóng để phân biệt các cột cố định */
+        }
+
+        /* Áp dụng tương tự cho các cột tiếp theo, nếu bạn muốn cố định 6 cột đầu tiên */
+        .sticky-table thead th:nth-child(3),
+        .sticky-table tbody td:nth-child(3) {
+            position: sticky;
+            left: 170px; /* Điều chỉnh khoảng cách cho cột thứ 3 */
+            background-color: white;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sticky-table thead th:nth-child(4),
+        .sticky-table tbody td:nth-child(4) {
+            position: sticky;
+            left: 380px; /* Điều chỉnh khoảng cách cho cột thứ 3 */
+            background-color: white;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sticky-table thead th:nth-child(5),
+        .sticky-table tbody td:nth-child(5) {
+            position: sticky;
+            left: 470px; /* Điều chỉnh khoảng cách cho cột thứ 3 */
+            background-color: white;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sticky-table thead th:nth-child(6),
+        .sticky-table tbody td:nth-child(6) {
+            position: sticky;
+            left: 520px; /* Điều chỉnh khoảng cách cho cột thứ 3 */
+            background-color: white;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+
+        tr {
+            height: 10pt; /* Đặt chiều cao của các dòng cố định là 10pt */
+        }
+
         th, td {
             padding: 10px;
             text-align: center;
             border: 1px solid #ddd;
+            word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            height: 10pt;
+            min-height: 10pt;
         }
+
         th {
             background-color: #f2f2f2;
+            top: 0;
+            z-index: 2;
         }
+
         b {
             font-size: 24px;
             display: block;
             text-align: center;
             margin-top: 20px;
         }
+
         #searchForm {
             text-align: center;
             margin-top: 20px;
         }
+
         #updateLocation {
             text-align: center;
             font-size: 18px;
             margin-top: 10px;
             color: #007BFF;
         }
+
+        #tableContainer {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        #pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .page-button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .active-page {
+            background-color: #007BFF;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <b>Tìm Kiếm Kết Quả</b>
 
-    <!-- Form tìm kiếm tên bảng -->
     <div id="searchForm">
         <input type="text" id="tableName" placeholder="Nhập tên bảng (ví dụ: data2)" required>
-        <button onclick="searchData()">Tìm Kiếm</button>
+        <button id="searchButton">Tìm Kiếm</button>
     </div>
 
-    <!-- Thông báo đang tìm kiếm -->
     <div id="updateLocation"></div>
 
-    <!-- Bảng kết quả -->
-    <table id="resultTable">
-        <thead></thead>
-        <tbody></tbody>
-    </table>
+    <div id="tableContainer" class="sticky-table">
+        <table id="resultTable">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="pagination"></div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
@@ -71,62 +177,130 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Tìm kiếm dữ liệu theo tên bảng
+        let currentPage = 1;
+        let data = [];
+        const rowsPerPage = 10;
+        let columnsToDelete = {}; // Tạo dictionary để lưu số thứ tự cột cần xóa
+
+        document.getElementById("searchButton").addEventListener("click", function(event) {
+            event.preventDefault();
+            searchData();
+        });
+
         function searchData() {
             const tableName = document.getElementById("tableName").value;
-            console.log("Tên bảng nhập vào: ", tableName);  // Kiểm tra giá trị nhập vào
 
-            // Nếu tên bảng không có giá trị, yêu cầu nhập lại
             if (!tableName) {
                 alert("Vui lòng nhập tên bảng.");
                 return;
             }
 
-            // Hiển thị thông báo "Đang tìm..."
             document.getElementById("updateLocation").innerHTML = "Đang tìm...";
+            let twoDimensionalArray = []; // Đảm bảo rằng biến này có thể truy cập ở phạm vi toàn cục hoặc bên ngoài hàm `onValue`
 
-            const dataRef = ref(db, tableName); // Tham chiếu đến tên bảng người dùng nhập
+            const TitleName = ref(db, "data");
+            onValue(TitleName, (snapshot) => {
+                const rawData2 = snapshot.val();
+                const data2 = Object.values(rawData2);
+                if (data2.length < 1) {
+                    console.log("Dữ liệu không đủ.");
+                    return;
+                }
+                  // Chuyển đổi data2[0] và data2[1] thành mảng 2 chiều
+                const row1 = Object.entries(data2[0]);  // Mảng 2 chiều từ dòng đầu tiên
+                // Kết hợp cả hai dòng thành một mảng 2 chiều
+                twoDimensionalArray = [row1];
+                console.log(twoDimensionalArray[0]); // Kiểm tra dữ liệu
+                // Debug kiểm tra một giá trị cụ thể từ mảng 2 chiều
+                if (twoDimensionalArray[0][3]) {
+                    console.log("Value at [0][3][1]:", twoDimensionalArray[0][3][1]);
+                } else {
+                    console.log("Mảng không có giá trị ở vị trí [0][3].");
+                }
+            });
+
+
+
+            const dataRef = ref(db, tableName);
             onValue(dataRef, (snapshot) => {
-                const data = snapshot.val();
+                const rawData = snapshot.val();
                 const resultTableBody = document.querySelector('#resultTable tbody');
                 const resultTableHeader = document.querySelector('#resultTable thead');
-                resultTableBody.innerHTML = '';  // Xóa dữ liệu cũ
-                resultTableHeader.innerHTML = ''; // Xóa tiêu đề cũ
+                resultTableBody.innerHTML = ''; 
+                resultTableHeader.innerHTML = '';
 
-                // Xử lý sau khi dữ liệu được tải
-                if (data) {
-                    const columnNames = Object.keys(data[Object.keys(data)[0]]);
-                    const headerRow = document.createElement('tr');
-                    columnNames.forEach(colName => {
-                        const th = document.createElement('th');
-                        th.textContent = colName;
-                        headerRow.appendChild(th);
-                    });
-                    resultTableHeader.appendChild(headerRow);
-
-                    for (let key in data) {
-                        const item = data[key];
-                        const row = document.createElement('tr');
-                        columnNames.forEach(colName => {
-                            const td = document.createElement('td');
-                            td.textContent = item[colName];
-                            row.appendChild(td);
-                        });
-                        resultTableBody.appendChild(row);
-                    }
-                } else {
-                    // Nếu không có dữ liệu, hiển thị thông báo
-                    const row = document.createElement('tr');
-                    const tdNoData = document.createElement('td');
-                    tdNoData.setAttribute('colspan', '169'); // Giả sử có 169 cột
-                    tdNoData.textContent = 'Không có dữ liệu';
-                    row.appendChild(tdNoData);
-                    resultTableBody.appendChild(row);
+                if (!rawData) {
+                    alert("Không tìm thấy bảng dữ liệu!");
+                    document.getElementById("updateLocation").innerHTML = "";
+                    return;
                 }
 
-                // Sau khi hoàn thành tìm kiếm, xóa thông báo "Đang tìm..."
+                data = Object.values(rawData);
+                const columnNames = Object.keys(data[0]);
+                const headerRow = document.createElement('tr');
+
+                columnsToDelete = {}; // Reset lại dictionary cột cần xóa
+
+                columnNames.forEach((colName, index) => {
+                    const isEmptyColumn = data.every(item => !item[colName]?.trim());
+                    if (isEmptyColumn) {
+                        columnsToDelete[index] = true;
+                    } else {
+                        const th = document.createElement('th');
+                        const correspondingValueInRow2 = twoDimensionalArray[0][index][1];
+                        th.textContent = correspondingValueInRow2;
+                        headerRow.appendChild(th);
+                    }
+                });
+
+                resultTableHeader.appendChild(headerRow);
+                displayPage(currentPage);
+                displayPagination();
                 document.getElementById("updateLocation").innerHTML = "";
             });
+        }
+        
+
+        function displayPage(page) {
+            const startIndex = (page - 1) * rowsPerPage;
+            const endIndex = page * rowsPerPage;
+            const pageData = data.slice(startIndex, endIndex);
+
+            const resultTableBody = document.querySelector('#resultTable tbody');
+            resultTableBody.innerHTML = '';
+
+            pageData.forEach(item => {
+                const row = document.createElement('tr');
+                Object.keys(item).forEach((colName, index) => {
+                    if (!columnsToDelete[index] && item[colName]?.trim()) {
+                        const td = document.createElement('td');
+                        td.textContent = item[colName];
+                        row.appendChild(td);
+                    }
+                });
+                resultTableBody.appendChild(row);
+            });
+        }
+
+        function displayPagination() {
+            const totalPages = Math.ceil(data.length / rowsPerPage);
+            const paginationDiv = document.getElementById("pagination");
+            paginationDiv.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.add('page-button');
+                if (i === currentPage) {
+                    button.classList.add('active-page');
+                }
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayPage(currentPage);
+                    displayPagination();
+                });
+                paginationDiv.appendChild(button);
+            }
         }
     </script>
 </body>

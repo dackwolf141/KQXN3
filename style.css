@@ -1,0 +1,131 @@
+table {
+    width: 80%;
+    border-collapse: collapse;
+    margin: 20px auto;
+}
+
+.sticky-table {
+    overflow: auto;
+}
+
+.sticky-table thead th, 
+.sticky-table tbody td {
+    width: 750px; /* Can be adjusted */
+}
+
+.sticky-table thead th:first-child,
+.sticky-table tbody td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-table thead th:nth-child(2),
+.sticky-table tbody td:nth-child(2) {
+    position: sticky;
+    left: 70px; 
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-table thead th:nth-child(3),
+.sticky-table tbody td:nth-child(3) {
+    position: sticky;
+    left: 170px;
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-table thead th:nth-child(4),
+.sticky-table tbody td:nth-child(4) {
+    position: sticky;
+    left: 380px;
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-table thead th:nth-child(5),
+.sticky-table tbody td:nth-child(5) {
+    position: sticky;
+    left: 470px;
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-table thead th:nth-child(6),
+.sticky-table tbody td:nth-child(6) {
+    position: sticky;
+    left: 520px;
+    background-color: white;
+    z-index: 2;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+tr {
+    height: 10pt;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    height: 10pt;
+    min-height: 10pt;
+}
+
+th {
+    background-color: #f2f2f2;
+    top: 0;
+    z-index: 2;
+}
+
+b {
+    font-size: 24px;
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#searchForm {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#updateLocation {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 10px;
+    color: #007BFF;
+}
+
+#tableContainer {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+#pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.page-button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.active-page {
+    background-color: #007BFF;
+    color: white;
+}
